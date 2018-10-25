@@ -136,7 +136,8 @@ func loadRoleFromSamlRoleAttributeValue(attributeValue, samlAssertion string, ac
 
 	accountName, ok := accounts[accountId]
 	if !ok {
-		return aws.Role{}, fmt.Errorf("cannot find account name for %s role", roleArn)
+		// account name is not listed for this role
+		accountName = accountId
 	}
 
 	return aws.Role{
