@@ -107,7 +107,8 @@ func loadSamlRoles(samlAssertion string, accounts map[string]string) (aws.Roles,
 		}
 		accountName, ok := accounts[role.Account.Id]
 		if !ok {
-			errs = append(errs, fmt.Sprintf("cannot find account name for %s role", role.Arn))
+			// account name is not listed for this role
+			accountName = role.Account.Id
 		}
 
 		role.SamlAssertion = samlAssertion
