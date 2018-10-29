@@ -31,3 +31,8 @@ devices, _ := MFA(adfsHost, user, password)
 // passcode is required only with 'Passcode' factor
 roles, _ := devices["phone1"].Factors["Duo Push"].LoadAWSRoles("")
 ```
+
+# Legal
+This project is available under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+Copyright 2018 Expedia Inc.
