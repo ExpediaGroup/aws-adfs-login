@@ -15,10 +15,11 @@ package aws
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"sort"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 type Roles []Role
@@ -85,16 +86,22 @@ type Role struct {
 }
 
 func (role Role) Login() (Credentials, error) {
+	return role.LoginWithDuration(60 * time.Minute)
+}
 
+func (role Role) LoginWithDuration(duration time.Duration) (Credentials, error) {
 	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
 		return Credentials{}, fmt.Errorf("load default aws config: %v", err)
 	}
 
+	durationSeconds := int64(duration / time.Second)
+
 	input := &sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:  &role.PrincipalArn,
-		RoleArn:       &role.Arn,
-		SAMLAssertion: &role.SamlAssertion,
+		PrincipalArn:    &role.PrincipalArn,
+		RoleArn:         &role.Arn,
+		SAMLAssertion:   &role.SamlAssertion,
+		DurationSeconds: &durationSeconds,
 	}
 
 	out, err := sts.New(cfg).AssumeRoleWithSAMLRequest(input).Send()
