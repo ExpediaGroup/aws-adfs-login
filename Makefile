@@ -3,4 +3,4 @@ test:
 	GO111MODULE=on go test -v ./...
 
 build: test
-	GO111MODULE=on go build
+	GO111MODULE=on go build -v ./pkg/client
