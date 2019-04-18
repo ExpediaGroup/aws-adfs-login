@@ -15,6 +15,7 @@ package aws
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"sort"
 	"time"
 
@@ -98,10 +99,10 @@ func (role Role) LoginWithDuration(duration time.Duration) (Credentials, error) 
 	durationSeconds := int64(duration / time.Second)
 
 	input := &sts.AssumeRoleWithSAMLInput{
-		PrincipalArn:    &role.PrincipalArn,
-		RoleArn:         &role.Arn,
-		SAMLAssertion:   &role.SamlAssertion,
-		DurationSeconds: &durationSeconds,
+		PrincipalArn:    aws.String(role.PrincipalArn),
+		RoleArn:         aws.String(role.Arn),
+		SAMLAssertion:   aws.String(role.SamlAssertion),
+		DurationSeconds: aws.Int64(durationSeconds),
 	}
 
 	out, err := sts.New(cfg).AssumeRoleWithSAMLRequest(input).Send()
@@ -129,9 +130,9 @@ func fromSTSCredentials(stsCreds *sts.Credentials) Credentials {
 	}
 
 	return Credentials{
-		AccessKeyId:     *stsCreds.AccessKeyId,
-		Expiration:      *stsCreds.Expiration,
-		SecretAccessKey: *stsCreds.SecretAccessKey,
-		SessionToken:    *stsCreds.SessionToken,
+		AccessKeyId:     aws.StringValue(stsCreds.AccessKeyId),
+		Expiration:      aws.TimeValue(stsCreds.Expiration),
+		SecretAccessKey: aws.StringValue(stsCreds.SecretAccessKey),
+		SessionToken:    aws.StringValue(stsCreds.SessionToken),
 	}
 }
