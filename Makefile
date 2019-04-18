@@ -1,4 +1,6 @@
-build:
+test:
 	go fmt ./...
-	go test -v ./...
-	go build -v ./pkg/client
+	GO111MODULE=on go test -v ./...
+
+build: test
+	GO111MODULE=on go build
