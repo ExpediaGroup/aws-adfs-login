@@ -32,9 +32,10 @@ func TestLoadDuoAWSRoles(t *testing.T) {
 	devices, err := LoadDuoDevices(adfsHost, user, password)
 	require.NoError(t, err)
 
-	//devices["phone1"].Factors["Phone Call"].Submit("")
+	//roles, err := devices["phone1"].Factors["Phone Call"].LoadAWSRoles("")
 	roles, err := devices["phone1"].Factors["Duo Push"].LoadAWSRoles("")
-	//devices["phone1"].Factors["Passcode"].Submit("123123")
+	//roles, err := devices["phone1"].Factors["Passcode"].LoadAWSRoles("123123")
+
 	require.NoError(t, err)
 
 	for _, role := range roles {

@@ -57,7 +57,7 @@ func (f *Frame) SubmitPrompt(device, name, passcode string) error {
 		return fmt.Errorf("submit prompt request: %v", err)
 	}
 
-	f.txid = fr.Response["txid"]
+	f.txid = fr.Response["txid"].(string)
 	return nil
 }
 
@@ -76,8 +76,8 @@ func (f *Frame) IsStatusAllowed() (bool, error) {
 		return false, fmt.Errorf("send frame status request: %v", err)
 	}
 
-	if fr.Response["status_code"] == "allow" {
-		f.resultUrl = strings.TrimPrefix(fr.Response["result_url"], "/frame/")
+	if fr.Response["status_code"].(string) == "allow" {
+		f.resultUrl = strings.TrimPrefix(fr.Response["result_url"].(string), "/frame/")
 		return true, nil
 	}
 	return false, nil
@@ -98,7 +98,7 @@ func (f *Frame) LoadSamlLogin(loginResponse loginResponse) (SamlLoginForm, error
 		return SamlLoginForm{}, fmt.Errorf("send frame status request: %v", err)
 	}
 
-	cookie := fr.Response["cookie"]
+	cookie := fr.Response["cookie"].(string)
 	return NewSamlLoginForm(loginResponse, cookie), nil
 }
 
@@ -141,16 +141,18 @@ func (f *Frame) sendRequest(action string, data url.Values) (frameResponse, erro
 }
 
 type frameResponse struct {
-	Stat     string            `json:"stat"`    // OK|FAIL
-	Message  string            `json:"message"` // only present if stat is 'FAIL'
-	Response map[string]string `json:"response"`
+	Stat       string                 `json:"stat"`        // OK|FAIL
+	Message    string                 `json:"message"`     // only present if stat is 'FAIL'
+	Status     string                 `json:"status"`      // only present in 'Phone Call'
+	StatusCode string                 `json:"status_code"` // only present in 'Phone Call'
+	Response   map[string]interface{} `json:"response"`    // different depending on factor
 }
 
 func loadFrameResponse(httpBody []byte) (frameResponse, error) {
 
 	var response frameResponse
 	if err := json.Unmarshal(httpBody, &response); err != nil {
-		return response, err
+		return response, fmt.Errorf("%s: %v", string(httpBody), err)
 	}
 
 	if response.Stat != "OK" {
