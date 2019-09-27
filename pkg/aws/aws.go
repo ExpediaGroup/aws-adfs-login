@@ -14,6 +14,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"sort"
@@ -105,7 +106,7 @@ func (role Role) LoginWithDuration(duration time.Duration) (Credentials, error) 
 		DurationSeconds: aws.Int64(durationSeconds),
 	}
 
-	out, err := sts.New(cfg).AssumeRoleWithSAMLRequest(input).Send()
+	out, err := sts.New(cfg).AssumeRoleWithSAMLRequest(input).Send(context.Background())
 	if err != nil {
 		return Credentials{}, fmt.Errorf("aws assume role %s with saml: %v", role.Arn, err)
 	}
