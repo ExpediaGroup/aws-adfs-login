@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 var (
@@ -43,9 +44,35 @@ func TestLoadDuoAWSRoles(t *testing.T) {
 	}
 }
 
+func TestLoadDuoAWSRolesWithTimeout(t *testing.T) {
+
+	devices, err := LoadDuoDevicesWithTimeout(adfsHost, user, password, 1 * time.Minute)
+	require.NoError(t, err)
+
+	//roles, err := devices["phone1"].Factors["Phone Call"].LoadAWSRoles("")
+	roles, err := devices["phone1"].Factors["Duo Push"].LoadAWSRoles("")
+	//roles, err := devices["phone1"].Factors["Passcode"].LoadAWSRoles("123123")
+
+	require.NoError(t, err)
+
+	for _, role := range roles {
+		t.Log(role.Name)
+	}
+}
+
 func TestLoadAWSRoles(t *testing.T) {
 
 	roles, err := LoadAWSRoles(adfsHost, user, password)
+	require.NoError(t, err)
+
+	for _, role := range roles {
+		t.Log(role.Name)
+	}
+}
+
+func TestLoadAWSRolesWithTimeout(t *testing.T) {
+
+	roles, err := LoadAWSRolesWithTimeout(adfsHost, user, password, 5 * time.Minute)
 	require.NoError(t, err)
 
 	for _, role := range roles {
@@ -58,6 +85,21 @@ func TestLogin(t *testing.T) {
 	roleArn := ""
 
 	roles, err := LoadAWSRoles(adfsHost, user, password)
+	require.NoError(t, err)
+
+	role, err := roles.RoleByRoleArn(roleArn)
+	require.NoError(t, err)
+
+	creds, err := role.Login()
+	require.NoError(t, err)
+	assert.NotEmpty(t, creds.SecretAccessKey)
+}
+
+func TestLoginWithTimeout(t *testing.T) {
+
+	roleArn := ""
+
+	roles, err := LoadAWSRolesWithTimeout(adfsHost, user, password, 1 * time.Minute)
 	require.NoError(t, err)
 
 	role, err := roles.RoleByRoleArn(roleArn)
