@@ -25,19 +25,34 @@ import (
 )
 
 func LoadAWSRoles(adfsHost, user, password string) (aws.Roles, error) {
-
-	// using the same client with cookie jar to persist session
 	c := newHttpClient()
-	loginForm, err := loadLoginForm(c, getLoginUrl(adfsHost), user, password)
+	return LoadAWSRolesByClient(adfsHost, user, password, c)
+}
+
+func LoadAWSRolesWithTimeout(adfsHost, user, password string, timeout time.Duration) (aws.Roles, error) {
+	c := newHttpClientWithTimeout(timeout)
+	return LoadAWSRolesByClient(adfsHost, user, password, c)
+}
+
+func LoadAWSRolesByClient(adfsHost, user, password string, client *http.Client) (aws.Roles, error) {
+	loginForm, err := loadLoginForm(client, getLoginUrl(adfsHost), user, password)
 	if err != nil {
 		return nil, fmt.Errorf("cannot load login form: %v", err)
 	}
-	return saml.LoadAWSRoles(c, loginForm)
+	return saml.LoadAWSRoles(client, loginForm)
 }
 
 func LoadDuoDevices(adfsHost, user, password string) (duo.Devices, error) {
-
 	c := newHttpClient()
+	return LoadDuoDevicesWithClient(adfsHost, user, password, c)
+}
+
+func LoadDuoDevicesWithTimeout(adfsHost, user, password string, timeout time.Duration) (duo.Devices, error) {
+	c := newHttpClientWithTimeout(timeout)
+	return LoadDuoDevicesWithClient(adfsHost, user, password, c)
+}
+
+func LoadDuoDevicesWithClient(adfsHost, user, password string, c *http.Client) (duo.Devices, error) {
 	loginForm, err := loadLoginForm(c, getLoginUrl(adfsHost), user, password)
 	if err != nil {
 		return nil, fmt.Errorf("cannot load login form: %v", err)
@@ -52,8 +67,12 @@ func getLoginUrl(adfsHost string) string {
 }
 
 func newHttpClient() *http.Client {
-
 	// make timeout generous when waiting for mfa duo push notifications
+	return newHttpClientWithTimeout(20 * time.Second)
+}
+
+func newHttpClientWithTimeout(timeout time.Duration) *http.Client {
+	// using the same client with cookie jar to persist session
 	jar, _ := cookiejar.New(nil)
-	return &http.Client{Jar: jar, Timeout: 20 * time.Second}
+	return &http.Client{Jar: jar, Timeout: timeout}
 }
