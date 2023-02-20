@@ -1,3 +1,8 @@
+# Deprecation Notice
+
+We no longer support this project and will be archiving this repository to reflect the same.
+In case needed, the binary can be built using the commands in Makefile
+
 # AWS ADFS login
 
 Library for user login (client side) using AWS ADFS (Active Directory Federation Service).
